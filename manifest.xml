@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest xmlns="https://www.bug-maker.com" version="0.1">
+    <application>   <!--应用信息-->
+        <name><![CDATA[七牛云]]></name>                     <!--名称-->
+        <identification><![CDATA[system_qiniu]]></identification>   <!--标识名-->
+        <type><![CDATA[system]]></type>                     <!--类型system/addon-->
+        <version><![CDATA[0.0.1]]></version>                <!--版本-->
+        <synopsis><![CDATA[关联附件七牛云]]></synopsis>     <!--简介-->
+        <author><![CDATA[猪在天上飞]]></author>             <!--作者-->
+        <url><![CDATA[https://www.esaadmin.com]]></url>     <!--链接-->
+    </application>
+    <basics>        <!--基础处理-->
+        <addon>                                             <!--基础的应用-->
+            <!--<item name="sys_base" contrast=">=" version="1.0.0" />-->
+        </addon>
+        <composer>                                          <!--基础的插件-->
+            <item name="esa/esa-addons" contrast="=" version="dev-master" />
+            <item name="topthink/framework" contrast="=" version="5.1.*" />
+        </composer>
+        <extend>                                            <!--基础类-->
+            <item name="esa" contrast=">=" version="1.0.0" />
+        </extend>
+    </basics>
+    <system>        <!--系统处理-->
+        <hook behavier="app_init"/>                         <!--定义初始化钩子-->
+        <hook behavier="esaAddonMenu"/>                     <!--定义自定义菜单钩子-->
+        <hook behavier="attachment_init" />                 <!--定义附件配置处理狗子-->
+        <index ctrl="index.index/index"/>                   <!--定义应用首页进入控制器-->
+        <fixedpage ctrl="admin.index/index"/>               <!--定义应用后台固定页进入控制器-->
+    </system>
+    <!--<platform_menu> <!--平台菜单（直接显示进平台菜单中）-->-->
+    <!--    <entry mold="*" en="qiniu_set" title="七牛云设置" icon="fa fa-hdd-o">-->
+    <!--        <entry mold="*" en="tag" title="平台设置" ctrl="platform.setting/index" />-->
+    <!--        <entry mold="*" en="table" title="平台插件" ctrl="platform.addon/index" />-->
+    <!--    </entry>-->
+    <!--</platform_menu>-->
+    <install><![CDATA[install.sql]]></install>              <!--安装时执行的sql文件-->
+    <upgrade><![CDATA[upgrade.sql]]></upgrade>              <!--升级时执行的sql文件-->
+    <uninstall><![CDATA[uninstall.sql]]></uninstall>        <!--卸载时执行的sql文件-->
+</manifest>
