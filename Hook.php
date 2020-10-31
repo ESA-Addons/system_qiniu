@@ -167,7 +167,7 @@ class Hook extends AddonsHook
                     ],
                     [
                         "type"      => "select",
-                        "title"     => "客户端直传地址",
+                        "title"     => "存储区域选择",
                         "param"     => [
                             "name"      => "upload_url",
                             "lines"     => [
@@ -179,7 +179,7 @@ class Hook extends AddonsHook
                             ],
                             "value"     => "https://upload.qiniup.com",
                         ],
-                        "explain"   => "",
+                        "explain"   => "确定服务器上传/客户端上传的存储区域",
                         "require"   => "require",
                     ],
                 ]
