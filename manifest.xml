@@ -31,12 +31,6 @@
         <index ctrl="index.index/index"/>                   <!--定义应用首页进入控制器-->
         <fixedpage ctrl="admin.index/index"/>               <!--定义应用后台固定页进入控制器-->
     </system>
-    <!--<platform_menu> <!--平台菜单（直接显示进平台菜单中）-->-->
-    <!--    <entry mold="*" en="qiniu_set" title="七牛云设置" icon="fa fa-hdd-o">-->
-    <!--        <entry mold="*" en="tag" title="平台设置" ctrl="platform.setting/index" />-->
-    <!--        <entry mold="*" en="table" title="平台插件" ctrl="platform.addon/index" />-->
-    <!--    </entry>-->
-    <!--</platform_menu>-->
     <install><![CDATA[install.sql]]></install>              <!--安装时执行的sql文件-->
     <upgrade><![CDATA[upgrade.sql]]></upgrade>              <!--升级时执行的sql文件-->
     <uninstall><![CDATA[uninstall.sql]]></uninstall>        <!--卸载时执行的sql文件-->
