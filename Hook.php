@@ -31,9 +31,12 @@ class Hook extends AddonsHook
             'callbackBody' => 'filename=$(fname)&hash=$(etag)&key=$(key)&imageInfo=$(imageInfo)&filesize=$(fsize)&admin=$(x:admin)&user=$(x:user)',
         );
         $auth = new Auth($qn_config['qiniu_accesskey'], $qn_config['qiniu_secretkey']);
+        if(empty($this->admin['id']) && empty($this->auth->id)){
+            return $config;
+        }
         $multipart['token'] = $auth->uploadToken($qn_config['qiniu_bucket'], null, 6000, $policy);
         $multipart['x:admin'] = (int)session("admin_info.id");
-        $multipart['x:user'] = (int)session("user_info.id");
+        $multipart['x:user'] = (int)$this->auth->id;
         
         if(isset($qn_config['qiniu_client_switch']) && $qn_config['qiniu_client_switch'] == "true"){
             $config['upload_url'] = $qn_config['qiniu_upload_url'];
