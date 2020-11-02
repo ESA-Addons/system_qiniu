@@ -22,9 +22,12 @@
         </extend>
     </basics>
     <system>        <!--系统处理-->
-        <hook behavier="app_init"/>                         <!--定义初始化钩子-->
-        <hook behavier="esaAddonMenu"/>                     <!--定义自定义菜单钩子-->
+        <hook behavier="esaPlatformConfigs" />
+        <hook behavier="esaSystemConfigs" />
+        <!--<hook behavier="esaAddonMenu"/>                     定义自定义菜单钩子-->
         <hook behavier="attachment_init" />                 <!--定义附件配置处理狗子-->
+        <hook behavier="esaAttachmentDone" />
+        <hook behavier="esaAttachmentHttpSrc" />
         <index ctrl="index.index/index"/>                   <!--定义应用首页进入控制器-->
         <fixedpage ctrl="admin.index/index"/>               <!--定义应用后台固定页进入控制器-->
     </system>
