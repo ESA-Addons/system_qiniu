@@ -3,6 +3,7 @@ namespace addons\system_qiniu;
 
 use ESA\AddonsHook;
 use addons\system_qiniu\library\Auth;
+use esa\Http;
 
 class Hook extends AddonsHook
 {
@@ -12,12 +13,13 @@ class Hook extends AddonsHook
      */
     public function esaAttachmentInit($config)
     {
-        $qn_config = get_config("qiniu_*");
-        if(empty($qn_config) || !isset($qn_config['qiniu_switch']) || $qn_config['qiniu_switch'] == "false"){
+        $qn_config = get_config("system_qiniu.");
+        
+        if(empty($qn_config) || !isset($qn_config['switch']) || $qn_config['switch'] == "false"){
             if(!empty(PLATFORM_ID)){
                 // 向上查
-                $qn_config = get_config("qiniu_*",0);
-                if(empty($qn_config) || !isset($qn_config['qiniu_switch']) || $qn_config['qiniu_switch'] == "false"){
+                $qn_config = get_config("system_qiniu.",0);
+                if(empty($qn_config) || !isset($qn_config['switch']) || $qn_config['switch'] == "false"){
                     return $config;
                 }
             }else{
@@ -30,19 +32,19 @@ class Hook extends AddonsHook
             'callbackUrl'  => request()->domain()."/addons/".PLATFORM_ID."/system_qiniu.index.index/callback",
             'callbackBody' => 'filename=$(fname)&hash=$(etag)&key=$(key)&imageInfo=$(imageInfo)&filesize=$(fsize)&admin=$(x:admin)&user=$(x:user)',
         );
-        $auth = new Auth($qn_config['qiniu_accesskey'], $qn_config['qiniu_secretkey']);
+        $auth = new Auth($qn_config['accesskey'], $qn_config['secretkey']);
         if(empty($this->admin['id']) && empty($this->auth->id)){
             return $config;
         }
-        $multipart['token'] = $auth->uploadToken($qn_config['qiniu_bucket'], null, 6000, $policy);
+        $multipart['token'] = $auth->uploadToken($qn_config['bucket'], null, 6000, $policy);
         $multipart['x:admin'] = (int)session("admin_info.id");
         $multipart['x:user'] = (int)$this->auth->id;
         
-        if(isset($qn_config['qiniu_client_switch']) && $qn_config['qiniu_client_switch'] == "true"){
-            $config['upload_url'] = $qn_config['qiniu_upload_url'];
+        if(isset($qn_config['client_switch']) && $qn_config['client_switch'] == "true"){
+            $config['upload_url'] = $qn_config['upload_url'];
         }
         
-        $config['bucket'] = $qn_config['qiniu_bucket'];
+        $config['bucket'] = $qn_config['bucket'];
         $config['multipart'] = $multipart;
         $config['other']=$policy;
         return $config;
@@ -52,28 +54,104 @@ class Hook extends AddonsHook
      * 附件上传完毕
      * @return bool
      */
-    public function esaAttachmentDone()
+    public function esaAttachmentDone($id)
     {
+        $qn_config = get_config("system_qiniu.");
+        $info = model("attachment")->where("id",$id)->find();
+        if(empty($info) || empty($qn_config) || !isset($qn_config['switch']) || $qn_config['switch'] == "false") return false;
+        
+        $auth = new Auth($config['accesskey'], $config['secretkey']);
+        $token = $auth->uploadToken($config['bucket'], null, $config['expire'], $policy);
+        $multipart = [
+            ['name' => 'token', 'contents' => $token],
+            [
+                'name'     => 'file',
+                'contents' => fopen($filePath, 'r'),
+                'filename' => $fileName,
+            ]
+        ];
+        try {
+            $client = new \GuzzleHttp\Client();
+            $res = $client->request('POST', $config['uploadurl'], [
+                'multipart' => $multipart
+            ]);
+            $code = $res->getStatusCode();
+            //成功不做任何操作
+        } catch (\GuzzleHttp\Exception\ClientException $e) {
+            $attachment->delete();
+            unlink($filePath);
+            $this->error("上传失败");
+        }
         return true;
+    }
+    
+    /**
+     * 附件删除钩子
+     * @return bool
+     */
+    public function esaAttachmentDelete($ids)
+    {
+        $qn_config = get_config("system_qiniu.");
+        if(!is_array($ids)){
+            $ids = explode(",",$ids);
+        }
+        $atts = model("common/attachment")->where(["id"=>$ids])->select();
+        foreach($atts as $k => $v){
+            if($v['type'] == "qiniu"){
+                // 七牛文件
+                $file = UPLOAD_PATH.attach2local($v['path']);
+            }else{
+                $file = UPLOAD_PATH.$v['path'];
+            }
+            
+            // 删除本地文件
+            if(file_exists($file)){
+                @unlink($file);
+            }
+            
+            if($v['type'] == 'location'){
+                return model("common/attachment")->destroy($v['id']);
+            }
+            
+            // 删除七牛文件
+            $auth = new Auth($qn_config['accesskey'], $qn_config['secretkey']);
+            $entry = $qn_config['bucket'] . ':' . $v['path'];
+            $encodedEntryURI = $auth->base64_urlSafeEncode($entry);
+            $url = 'http://rs.qiniu.com/delete/' . $encodedEntryURI;
+            $headers = $auth->authorization($url);
+            //删除云储存文件
+            $res = Http::sendRequest($url, [], 'POST', [CURLOPT_HTTPHEADER => ['Authorization: ' . $headers['Authorization']]]);
+            $data = json_decode($res['msg'],true);
+            if($res['ret'] === true && empty($data)){
+                if(model("common/attachment")->destroy($v['id'])){
+                    return true;
+                }else{
+                    return "数据库删除失败";
+                }
+            }else{
+                return !empty($data['error']) ? $data['error'] : false;
+            }
+        }
+        return false;
     }
     
     public function esaAttachmentHttpSrc(){
         // $url = get_config("qiniu_url");
-        $qn_config = get_config("qiniu_*");
-        if(empty($qn_config) || !isset($qn_config['qiniu_switch']) || $qn_config['qiniu_switch'] == "false"){
+        $qn_config = get_config("system_qiniu.");
+        if(empty($qn_config) || !isset($qn_config['switch']) || $qn_config['switch'] == "false"){
             if(!empty(PLATFORM_ID)){
                 // 向上查
-                $qn_config = get_config("qiniu_*",0);
-                if(empty($qn_config) || !isset($qn_config['qiniu_switch']) || $qn_config['qiniu_switch'] == "false"){
-                    $url = "/upload";
+                $qn_config = get_config("system_qiniu.",0);
+                if(empty($qn_config) || !isset($qn_config['switch']) || $qn_config['switch'] == "false"){
+                    $url = request()->domain()."/upload";
                 }else{
-                    $url = $qn_config['qiniu_url'];
+                    $url = $qn_config['url'];
                 }
             }else{
-                return $url="/upload";
+                $url = request()->domain()."/upload";
             }
         }else{
-            $url = $qn_config['qiniu_url'];
+            $url = $qn_config['url'];
         }
         return ["qiniu"=>$url."/{path}"];
         // $url = get_config("qiniu_url");
@@ -90,7 +168,7 @@ class Hook extends AddonsHook
     public function configs(){
         return [
             [
-                "group"    => "qiniu",
+                "group"    => "system_qiniu",
                 "icon"  => "fa fa-home",
                 "title" => "七牛配置",
                 "list"  => [
@@ -166,6 +244,20 @@ class Hook extends AddonsHook
                             "value"     => "false",
                         ],
                         "explain"   => "",
+                        "require"   => "require",
+                    ],
+                    [
+                        "type"      => "radio",
+                        "title"     => "是否保留服务器端文件",
+                        "param"     => [
+                            "name"      => "server_file_switch",
+                            "lines"     => [
+                                ["text"  => "是：","value" => "true"],
+                                ["text"  => "否：","value" => "false"]
+                            ],
+                            "value"     => "false",
+                        ],
+                        "explain"   => "当直传开启时此配置项失效",
                         "require"   => "require",
                     ],
                     [

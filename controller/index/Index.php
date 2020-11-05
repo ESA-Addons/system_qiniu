@@ -6,7 +6,7 @@ use addons\system_qiniu\Main;
 class Index extends Main
 {
     protected $ESA_TYPE     = "INDEX";
-    protected $EXPOSURE     = ["info"];
+    protected $EXPOSURE     = ["callback"];
     
     public function callback()
     {
@@ -20,7 +20,7 @@ class Index extends Main
         // return $this->result("上传成功",$this->request->param());
         $data = $this->request->param();
         // exit(dump($data));
-        $url = get_config("qiniu_url")."/";
+        $url = get_config("system_qiniu.url")."/";
         $where = [
             "type"  => "qiniu",
             "aid"   => $data['admin'],
