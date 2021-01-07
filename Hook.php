@@ -26,6 +26,7 @@ class Hook extends AddonsHook
                 return $config;
             }
         }
+        
         // $platform_id = !empty(request()->param("PLATFORM_ID")) ? request()->param("PLATFORM_ID") : PLATFORM_ID;
         $policy = array(
             'saveKey' => ltrim("qiniu/$(year)/$(mon)/$(day)/$(etag)$(ext)", '/'),
@@ -33,7 +34,7 @@ class Hook extends AddonsHook
             'callbackBody' => 'filename=$(fname)&hash=$(etag)&key=$(key)&imageInfo=$(imageInfo)&filesize=$(fsize)&admin=$(x:admin)&user=$(x:user)',
         );
         $auth = new Auth($qn_config['accesskey'], $qn_config['secretkey']);
-        if(empty($this->admin['id']) && empty($this->auth->id)){
+        if(empty(intval($this->admin['id'])) && empty(intval($this->auth->id))){
             return $config;
         }
         $multipart['token'] = $auth->uploadToken($qn_config['bucket'], null, 6000, $policy);
@@ -47,6 +48,7 @@ class Hook extends AddonsHook
         $config['bucket'] = $qn_config['bucket'];
         $config['multipart'] = $multipart;
         $config['other']=$policy;
+        
         return $config;
     }
     
