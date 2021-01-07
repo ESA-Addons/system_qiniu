@@ -1,1 +1,0 @@
-{"filename":"6366473954df81d3feac697bbef0220e.png","key":"20201025\/FhhyUTK8uF8ldGACqN7jQ99iLkJz.png","imageInfo":"{\"colorModel\":\"nrgba\",\"format\":\"png\",\"height\":54,\"size\":6532,\"width\":87}","filesize":"6532","admin":"1","user":"0","rule":"callback"}
