@@ -62,8 +62,8 @@ class Hook extends AddonsHook
         $info = model("attachment")->where("id",$id)->find();
         if(empty($info) || empty($qn_config) || !isset($qn_config['switch']) || $qn_config['switch'] == "false") return false;
         
-        $auth = new Auth($config['accesskey'], $config['secretkey']);
-        $token = $auth->uploadToken($config['bucket'], null, $config['expire'], $policy);
+        $auth = new Auth($qn_config['accesskey'], $qn_config['secretkey']);
+        $token = $auth->uploadToken($qn_config['bucket'], null, $qn_config['expire'], $policy);
         $multipart = [
             ['name' => 'token', 'contents' => $token],
             [
@@ -74,7 +74,7 @@ class Hook extends AddonsHook
         ];
         try {
             $client = new \GuzzleHttp\Client();
-            $res = $client->request('POST', $config['uploadurl'], [
+            $res = $client->request('POST', $qn_config['uploadurl'], [
                 'multipart' => $multipart
             ]);
             $code = $res->getStatusCode();
@@ -165,7 +165,8 @@ class Hook extends AddonsHook
     }
 
     public function esaSystemConfigs(){
-        return $this->configs();
+        return [];
+        // return $this->configs();
     }
     public function configs(){
         return [

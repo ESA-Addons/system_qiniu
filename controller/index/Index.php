@@ -20,7 +20,21 @@ class Index extends Main
         // return $this->result("上传成功",$this->request->param());
         $data = $this->request->param();
         // exit(dump($data));
-        $url = get_config("system_qiniu.url")."/";
+        
+        $qn_config = get_config("system_qiniu.");
+        if(empty($qn_config) || !isset($qn_config['switch']) || $qn_config['switch'] == "false"){
+            if(!empty(PLATFORM_ID)){
+                // 向上查
+                $qn_config = get_config("system_qiniu.",0);
+                if(empty($qn_config) || !isset($qn_config['switch']) || $qn_config['switch'] == "false"){
+                    return $config;
+                }
+            }else{
+                return $config;
+            }
+        }
+        
+        $url = $qn_config["url"]."/";
         $where = [
             "type"  => "qiniu",
             "aid"   => $data['admin'],
