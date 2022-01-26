@@ -2,7 +2,7 @@
 <manifest xmlns="https://www.bug-maker.com" version="0.1">
     <application>   <!--应用信息-->
         <name><![CDATA[七牛云]]></name>                     <!--名称-->
-        <identification><![CDATA[qubit_qiniu]]></identification>   <!--标识名-->
+        <identification><![CDATA[system_qiniu]]></identification>   <!--标识名-->
         <type><![CDATA[system]]></type>                     <!--类型system/addon-->
         <version><![CDATA[0.0.1]]></version>                <!--版本-->
         <synopsis><![CDATA[关联附件七牛云]]></synopsis>     <!--简介-->
