@@ -274,6 +274,7 @@ class Hook extends AddonsHook
                                 ["text"  => "华南-z2","value" => "https://upload-z2.qiniup.com"],
                                 ["text"  => "北美-na0","value" => "https://upload-na0.qiniup.com"],
                                 ["text"  => "东南亚-as0","value" => "https://upload-as0.qiniup.com"],
+                                ["text"  => "华东-浙江2","value" => "https://upload-cn-east-2.qiniup.com"]
                             ],
                             "value"     => "https://upload.qiniup.com",
                         ],
