@@ -62,6 +62,8 @@ class Hook extends AddonsHook
         $info = model("attachment")->where("id",$id)->find();
         if(empty($info) || empty($qn_config) || !isset($qn_config['switch']) || $qn_config['switch'] == "false") return false;
         
+        if($info['type'] != "qiniu") return true;
+        
         $auth = new Auth($qn_config['accesskey'], $qn_config['secretkey']);
         $token = $auth->uploadToken($qn_config['bucket'], null, $qn_config['expire'], $policy);
         $multipart = [
