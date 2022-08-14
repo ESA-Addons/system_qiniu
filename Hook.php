@@ -100,6 +100,7 @@ class Hook extends AddonsHook
             $ids = explode(",",$ids);
         }
         $atts = model("common/attachment")->where(["id"=>$ids])->select();
+
         foreach($atts as $k => $v){
             if($v['type'] == "qiniu"){
                 // 七牛文件
@@ -107,14 +108,14 @@ class Hook extends AddonsHook
             }else{
                 $file = UPLOAD_PATH.$v['path'];
             }
-            
+
             // 删除本地文件
             if(file_exists($file)){
                 @unlink($file);
             }
-            
+
             if($v['type'] == 'location'){
-                return model("common/attachment")->destroy($v['id']);
+                return model("common/attachment")->where("id",$v['id'])->update(['delete_time'=>time()]);
             }
             
             // 删除七牛文件
@@ -126,11 +127,12 @@ class Hook extends AddonsHook
             //删除云储存文件
             $res = Http::sendRequest($url, [], 'POST', [CURLOPT_HTTPHEADER => ['Authorization: ' . $headers['Authorization']]]);
             $data = json_decode($res['msg'],true);
+            // exit(dump($v['path']));
             if($res['ret'] === true && empty($data)){
-                if(model("common/attachment")->destroy($v['id'])){
+                if(model("common/attachment")->where("id",$v['id'])->update(['delete_time'=>time()])){
                     return true;
                 }else{
-                    return "数据库删除失败";
+                    return false;
                 }
             }else{
                 return !empty($data['error']) ? $data['error'] : false;
