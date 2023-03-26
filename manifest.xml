@@ -14,7 +14,6 @@
             <!--<item name="sys_base" contrast=">=" version="1.0.0" />-->
         </addon>
         <composer>                                          <!--基础的插件-->
-            <item name="esa/esa-addons" contrast="=" version="dev-master" />
             <item name="topthink/framework" contrast="=" version="5.1.*" />
         </composer>
         <extend>                                            <!--基础类-->
@@ -22,12 +21,11 @@
         </extend>
     </basics>
     <system>        <!--系统处理-->
-        <hook behavier="esaPlatformConfigs" />
-        <hook behavier="esaSystemConfigs" />
-        <!--<hook behavier="esaAddonMenu"/>                     定义自定义菜单钩子-->
-        <hook behavier="attachment_init" />                 <!--定义附件配置处理狗子-->
-        <hook behavier="esaAttachmentDone" />
-        <hook behavier="esaAttachmentHttpSrc" />
+        <hook behavier="platformConfigs" />
+        <hook behavier="systemConfigs" />
+        <!--<hook behavier="addonMenu"/>                     定义自定义菜单钩子-->
+        <hook behavier="attachInit" />                 <!--定义附件配置处理狗子-->
+        <hook behavier="attachBuckets" />
         <index ctrl="index.index/index"/>                   <!--定义应用首页进入控制器-->
         <fixedpage ctrl="admin.index/index"/>               <!--定义应用后台固定页进入控制器-->
     </system>

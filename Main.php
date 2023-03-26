@@ -1,25 +1,10 @@
 <?php
+
 namespace addons\system_qiniu;
 
-use ESA\Addons;
+use esa\Addon;
 
-class Main extends Addons
+class Main extends Addon
 {
-    /**
-     * 插件安装方法
-     * @return bool
-     */
-    public function install()
-    {
-        return true;
-    }
-
-    /**
-     * 插件卸载方法
-     * @return bool
-     */
-    public function uninstall()
-    {
-        return true;
-    }
+    
 }
