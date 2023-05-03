@@ -19,8 +19,7 @@ class Index extends Main
         // user: "0"
         // return $this->result("上传成功",$this->request->param());
         $data = $this->request->param();
-        // exit(dump($data));
-        
+        // trace(json_encode($data));
         $qn_config = get_platform_config("system_qiniu.");
         if(empty($qn_config['switch'])){
             if(!empty(PLATFORM_ID)){
@@ -50,23 +49,16 @@ class Index extends Main
         	];
             return $this->result("文件已存在",$res);
         }else{
-            $info = pathinfo($data['key']);
-            $type = "";
-            $exten = explode("?",$info['extension'])[0];
-            if(isset($data['imageInfo'])){
-                $type = "image";
-                $fileInfo = json_decode($data['imageInfo'],true);
-                $exten = $fileInfo['format'];
-            }
+            $type = explode("/", $data['type']);
             $insert = [
                 "storage_type"  => "qiniu",
                 "pfid"          => PLATFORM_ID,
                 "uid"           => $data['user'],
                 "aid"           => $data['admin'],
                 "name"          => $data['filename'],
-                "type"          => $type,
+                "type"          => $type[0],
                 "size"          => $data['filesize'],
-                "exten"         => $exten,
+                "exten"         => $type[1],
                 "path"          => $data['key'],
                 "hash"          => $data['hash'],
                 "create_time"   => time()
