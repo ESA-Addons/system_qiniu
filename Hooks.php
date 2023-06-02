@@ -61,7 +61,7 @@ class Hooks extends AddonsHook
         return ["qiniu"=>$config['url'] . "/{path}"];
     }
 
-    public function attachDelete($id){
+    public function attachDelete($ids){
         $qn_config = get_platform_config("system_qiniu.");
 
         if(empty($qn_config['switch'])){
@@ -77,36 +77,41 @@ class Hooks extends AddonsHook
         }
 
         $auth = new Auth($qn_config['accesskey'], $qn_config['secretkey']);
+        
+        $attachs = model("Attachment")->where("id","IN",$ids)->field("id,storage_type,path")->select();
+        if(count($attachs) == 0){
+            return false;
+        }
+        $doneIDs = [];
+        $encodedEntryURI = [];
+        foreach ($attachs as $key => $attach) {
+            if($attach['storage_type'] == "local"){
+                // 本地文件直接删除即可
+                @unlink(PUBLIC_PATH.'/upload/'.$attach['path']);
+            }else if($attach['storage_type'] == "qiniu"){
+                $entry = $qn_config['bucket'] . ':' . ltrim($attach->path, '/');
+                array_push($encodedEntryURI, '/delete/' . $auth->base64_urlSafeEncode($entry));
+            }else{
+                continue;
+            }
+            array_push($doneIDs, $attach['id']);
+        }
+        
+        $url = 'http://rs.qiniu.com/batch';
+        $params = 'op=' . implode('&op=', $encodedEntryURI);
 
-        $attach = model("attachment")->get($id);
+        $headers = $auth->authorization($url,$params,"application/x-www-form-urlencoded");
 
-        if(empty($attach) || $attach->delete_time > 0){
+        //批量删除云储存文件
+        $ret = Http::Post($url, $params, [CURLOPT_HTTPHEADER => ['Authorization: ' . $headers['Authorization']]]);
+
+        $res = @json_decode($ret, true);
+
+        if(!empty($res['error'])){
             return false;
         }
 
-        $entry = $qn_config['bucket'] . ':' . ltrim($attach->path, '/');
-        $encodedEntryURI = $auth->base64_urlSafeEncode($entry);
-        $url = 'http://rs.qiniu.com/delete/' . $encodedEntryURI;
-
-        $headers = $auth->authorization($url);
-        //删除云储存文件
-        $ret = Http::Post($url, [], [CURLOPT_HTTPHEADER => ['Authorization: ' . $headers['Authorization']]]);
-
-        if(empty($ret)){
-            // 删除成功
-            $attach->delete_time = time();
-            $attach->save();
-            return true;
-        }else{
-            $res = @json_decode($ret, true);
-            if(!empty($res['error'])){
-                // $attach->delete_time = time();
-                // $attach->save();
-                return false;
-            }
-        }
-
-        return false;
+        return model("Attachment")->where("id","IN",$doneIDs)->update(["delete_time"=>time()]);
     }
 
     public function platformConfigs(){
