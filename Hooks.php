@@ -4,6 +4,7 @@ namespace addons\system_qiniu;
 
 use addons\system_qiniu\library\Auth;
 use esa\AddonsHook;
+use esa\Http;
 
 class Hooks extends AddonsHook
 {
@@ -58,6 +59,54 @@ class Hooks extends AddonsHook
             $config = get_platform_config("system_qiniu.",0);
         }
         return ["qiniu"=>$config['url'] . "/{path}"];
+    }
+
+    public function attachDelete($id){
+        $qn_config = get_platform_config("system_qiniu.");
+
+        if(empty($qn_config['switch'])){
+            if(!empty(PLATFORM_ID)){
+                // 向上查
+                $qn_config = get_platform_config("system_qiniu.",0);
+                if(empty($qn_config['switch'])){
+                    return $config;
+                }
+            }else{
+                return $config;
+            }
+        }
+
+        $auth = new Auth($qn_config['accesskey'], $qn_config['secretkey']);
+
+        $attach = model("attachment")->get($id);
+
+        if(empty($attach) || $attach->delete_time > 0){
+            return false;
+        }
+
+        $entry = $qn_config['bucket'] . ':' . ltrim($attach->path, '/');
+        $encodedEntryURI = $auth->base64_urlSafeEncode($entry);
+        $url = 'http://rs.qiniu.com/delete/' . $encodedEntryURI;
+
+        $headers = $auth->authorization($url);
+        //删除云储存文件
+        $ret = Http::Post($url, [], [CURLOPT_HTTPHEADER => ['Authorization: ' . $headers['Authorization']]]);
+
+        if(empty($ret)){
+            // 删除成功
+            $attach->delete_time = time();
+            $attach->save();
+            return true;
+        }else{
+            $res = @json_decode($ret, true);
+            if(!empty($res['error'])){
+                // $attach->delete_time = time();
+                // $attach->save();
+                return false;
+            }
+        }
+
+        return false;
     }
 
     public function platformConfigs(){
