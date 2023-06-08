@@ -69,10 +69,10 @@ class Hooks extends AddonsHook
                 // 向上查
                 $qn_config = get_platform_config("system_qiniu.",0);
                 if(empty($qn_config['switch'])){
-                    return $config;
+                    return false;
                 }
             }else{
-                return $config;
+                return false;
             }
         }
 
@@ -111,7 +111,7 @@ class Hooks extends AddonsHook
             return false;
         }
 
-        return model("Attachment")->where("id","IN",$doneIDs)->update(["delete_time"=>time()]);
+        return $doneIDs;
     }
 
     public function platformConfigs(){
