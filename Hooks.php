@@ -25,7 +25,7 @@ class Hooks extends AddonsHook
 
         $policy = array(
             'saveKey' => ltrim("qiniu/$(year)/$(mon)/$(day)/$(etag)$(ext)", '/'),
-            'callbackUrl'  => esaurl("system_qiniu://api.index/callback", [], true, true),
+            'callbackUrl'  => esaurl("system_qiniu://api.index/callback", ["adid"=>ADDON_ID], true, true),
             'callbackBody' => 'filename=$(fname)&hash=$(etag)&key=$(key)&type=$(mimeType)&filesize=$(fsize)&admin=$(x:admin)&user=$(x:user)',
         );
 

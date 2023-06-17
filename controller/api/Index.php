@@ -32,7 +32,7 @@ class Index extends Main
         $where = [
             "storage_type"  => "qiniu",
             "pfid"          => PLATFORM_ID,
-            // "adid"          => ADDON_ID,
+            "adid"          => $data['adid'],
             "aid"           => $data['admin'],
             "uid"           => $data['user'],
             "hash"          => $data['hash'],
@@ -53,6 +53,7 @@ class Index extends Main
             $insert = [
                 "storage_type"  => "qiniu",
                 "pfid"          => PLATFORM_ID,
+                "adid"          => $data['adid'],
                 "uid"           => $data['user'],
                 "aid"           => $data['admin'],
                 "name"          => $data['filename'],
